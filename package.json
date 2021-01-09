@@ -1,0 +1,29 @@
+{
+  "name": "boe",
+  "version": "1.0.0",
+  "description": "A Discord bot created to manage events",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/makuwro/boe.git"
+  },
+  "author": "Christian Toney",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/makuwro/boe/issues"
+  },
+  "homepage": "https://github.com/makuwro/boe",
+  "dependencies": {
+    "better-sqlite3": "^7.1.1",
+    "dotenv": "^8.2.0",
+    "eris": "github:abalabahaha/eris#dev",
+    "node-cache": "^5.1.2",
+    "node-fetch": "^2.6.1",
+    "node-schedule": "^1.3.2",
+    "nodemon": "^2.0.7",
+    "ws": "^7.4.0"
+  }
+}
