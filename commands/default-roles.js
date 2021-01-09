@@ -11,8 +11,8 @@ module.exports = function() {
       case Regex.test(args):
         
         const Input = args.match(Regex).groups;
-        
         const GuildRoles = msg.channel.guild.roles;
+        
         function getScope() {
           
           return {
@@ -48,8 +48,7 @@ module.exports = function() {
             };
             
             // Make sure the role exists
-            var scope = getScope();
-            
+            let scope = getScope();
             let role = GuildRoles.find((iRole) => {
               return iRole[scope] === Input.role;
             });
@@ -127,8 +126,40 @@ module.exports = function() {
             
           case "all":
           case "list":
-          
-          
+            
+            // Get the roles and turn them into a string
+            const Roles = db.prepare("select * from DefaultRoles").all();
+            var descRoles = "";
+            
+            function getGuildRole(roleId) {
+              return GuildRoles.find((iRole) => {
+                return iRole.id === roleId;
+              });
+            };
+            
+            for (var i = 0; Roles.length > i; i++) {
+              
+              // Check if role exists
+              const GuildRole = getGuildRole(Roles[i].roleId);
+              
+              descRoles = descRoles + 
+                          (i !== 0 ? "\n" : "") + "**" + // line break
+                          (GuildRole ? "🔖 " + GuildRole.name : "⚠ `<DELETED ROLE>`") + // role name
+                          "** (" + GuildRole.id + ")"; // role ID
+              
+            };
+            
+            await msg.channel.createMessage({
+              content: "Here are the roles I'm giving the new members now:",
+              embed: {
+                description: descRoles
+              },
+              messageReferenceID: msg.id,
+              allowedMentions: {
+                repliedUser: true
+              }
+            });
+
             break;
             
           default:
