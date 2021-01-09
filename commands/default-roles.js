@@ -6,6 +6,11 @@ const Regex = /(?<action>new|add|remove|delete|del|list|all)(( -(?<scope>roleid|
 module.exports = function() {
   new Commands.new("defaultrole", ["drole"], "utils", async (bot, args, msg) => {
     
+    // Make sure that they have permission
+    if (!msg.member.permissions.has("manageRoles") || !msg.member.permissions.has("manageServer")) {
+      return;
+    };
+    
     switch (true) {
 		
       case Regex.test(args):
