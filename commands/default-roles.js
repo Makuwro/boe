@@ -12,6 +12,21 @@ module.exports = function() {
         
         const Input = args.match(Regex).groups;
         
+        const GuildRoles = msg.channel.guild.roles;
+        function getScope() {
+          
+          return {
+            "roleid": "id",
+            "rid": "id",
+            "id": "id",
+            "i": "id",
+            "rolename": "name",
+            "name": "name",
+            "n": "name"
+          }[Input.scope];
+          
+        };
+        
         switch (Input.action) {
           
           case "new":
@@ -33,30 +48,7 @@ module.exports = function() {
             };
             
             // Make sure the role exists
-            const GuildRoles = msg.channel.guild.roles;
-            var scope;
-            switch (Input.scope) {
-              
-              case "roleid":
-              case "rid":
-              case "id":
-              case "i":
-                
-                scope = "id";
-                break;
-                
-              case "rolename":
-              case "name":
-              case "n":
-              
-                // TODO: Fuzzy search
-                scope = "name";
-                break;
-                
-              default:
-                break;
-              
-            };
+            var scope = getScope();
             
             let role = GuildRoles.find((iRole) => {
               return iRole[scope] === Input.role;
@@ -91,10 +83,52 @@ module.exports = function() {
           case "delete":
           case "del":
           case "remove":
+          
+            // Let's do some checks
+            await msg.channel.sendTyping();
+            
+            // Make sure we have everything we need
+            if (!Input.scope | !Input.role) {
+              await msg.channel.createMessage({
+                content: "What's the " + (Input.scope ? "role" : "scope") + "?",
+                messageReferenceID: msg.id,
+                allowedMentions: {
+                  repliedUser: true
+                }
+              });
+              return;
+            };
+            
+            // Find the role
+            const RoleId = getScope() === "id" ? Input.role : (() => {
+              return GuildRoles.find((iRole) => {
+                return iRole.name === Input.role;
+              }).id;
+            })();
+            
+            // Check if the role is in the database
+            if (db.prepare("select * from DefaultRoles where roleId = (?)").get(RoleId)) {
+              
+              // Delete it
+              db.prepare("delete from DefaultRoles where roleId = (?)").run(RoleId);
+              
+            };
+            
+            // Done!
+            await msg.channel.createMessage({
+              content: "I will no longer give new members that role!",
+              messageReferenceID: msg.id,
+              allowedMentions: {
+                repliedUser: true
+              }
+            });
+            
             break;
             
           case "all":
           case "list":
+          
+          
             break;
             
           default:
