@@ -18,8 +18,7 @@ module.exports = function() {
         
         // Make sure every variable was supplied
         if (!Input.channelId || !Input.messageId || !Input.roleId || !Input.emoji) {
-          console.log(Input.emoji)
-          msg.channel.createMessage({
+          await msg.channel.createMessage({
             content: "What's the " + (Input.emoji ? (
               (
                 Input.channelId ? (
@@ -105,7 +104,7 @@ module.exports = function() {
         await reactMessage.addReaction(emoji);
         
         // Everything is OK!
-        msg.channel.createMessage({
+        await msg.channel.createMessage({
           content: "Self-role message created!",
           messageReferenceID: msg.id,
           allowedMentions: {
