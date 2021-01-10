@@ -7,7 +7,7 @@ module.exports = function() {
   new Commands.new("defaultrole", ["drole"], "utils", async (bot, args, msg) => {
     
     // Make sure that they have permission
-    if (!msg.member.permissions.has("manageRoles") || !msg.member.permissions.has("manageServer")) {
+    if (!msg.member.permissions.has("administrator") && (!msg.member.permissions.has("manageRoles") || !msg.member.permissions.has("manageServer"))) {
       return;
     };
     
