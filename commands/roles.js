@@ -31,15 +31,29 @@ async function handleCmd(cmd, bot, args, msg) {
       // This might take a bit
       await msg.channel.sendTyping();
       
+      // Make sure that they have permission
+      if (cmd !== "getrole" && !msg.member.permissions.has("administrator") && (!msg.member.permissions.has("manageRoles") || !msg.member.permissions.has("manageServer"))) {
+        return;
+      };
+      
+      // Make sure we have everything we need
+      if (Input.action !== "all" && Input.action !== "list" && !Input.scope | !Input.role) {
+        await msg.channel.createMessage({
+          content: "What's the " + (Input.scope ? "role" : "scope") + "?",
+          messageReferenceID: msg.id,
+          allowedMentions: {
+            repliedUser: true
+          }
+        });
+        return;
+      };
+      
       switch (Input.action) {
         
         case "new":
         case "add":
-          
-          // Make sure that they have permission
-          if (msg.member.permissions.has("administrator") && (!msg.member.permissions.has("manageRoles") || !msg.member.permissions.has("manageServer"))) {
-            return;
-          };
+        
+          if (cmd === "getrole") return;
           
           // Make sure we have everything we need
           if (!Input.scope | !Input.role) {
@@ -91,23 +105,6 @@ async function handleCmd(cmd, bot, args, msg) {
         case "remove":
         case "rem":
         case "get":
-        
-          // Make sure that they have permission
-          if (cmd !== "getrole" && !msg.member.permissions.has("administrator") && (!msg.member.permissions.has("manageRoles") || !msg.member.permissions.has("manageServer"))) {
-            return;
-          };
-          
-          // Make sure we have everything we need
-          if (!Input.scope | !Input.role) {
-            await msg.channel.createMessage({
-              content: "What's the " + (Input.scope ? "role" : "scope") + "?",
-              messageReferenceID: msg.id,
-              allowedMentions: {
-                repliedUser: true
-              }
-            });
-            return;
-          };
           
           if (cmd === "getrole") {
             
