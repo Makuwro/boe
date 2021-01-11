@@ -194,8 +194,6 @@ async function handleCmd(cmd, bot, args, msg) {
           
           for (var i = 0; Roles.length > i; i++) {
             
-            console.log(1);
-            
             // Check if role exists
             var guildRole = getGuildRole(Roles[i].roleId);
             
@@ -243,15 +241,12 @@ async function handleCmd(cmd, bot, args, msg) {
 };
 
 module.exports = function() {
-  new Commands.new("getrole", ["gr", "role", "r", "selfrole", "sr"], "utils", async (bot, args, msg) => {
-    handleCmd("getrole", bot, args, msg);
-  });
+  const Cmds = [["getrole", ["gr", "role", "r", "selfrole", "sr"]], ["defaultrole", ["drole"]], ["persistentrole", ["prole", "pr", "rejoinrole", "rerole"]]];
   
-  new Commands.new("defaultrole", ["drole"], "utils", async (bot, args, msg) => {
-    handleCmd("defaultrole", bot, args, msg);
-  });
-  
-  new Commands.new("persistentrole", ["prole", "pr", "rejoinrole", "rerole"], "utils", async (bot, args, msg) => {
-    handleCmd("persistentrole", bot, args, msg);
-  });
+  for (var i = 0; Cmds.length > i; i++) {
+    const Cmd = Cmds[i];
+    new Commands.new(Cmd[0], Cmd[1], "utils", async (bot, args, msg) => {
+      handleCmd(Cmd[0], bot, args, msg);
+    });
+  };
 };
