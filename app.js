@@ -242,7 +242,42 @@ bot.on("guildMemberAdd", async (guild, member) => {
     
   };
   
+  // Check if they had any previous roles
+  const PersistentMember = db.prepare("select * from PersistentMembers where userId = (?)").get(member.id);
+  const PreviousRoles = PersistentMember ? JSON.parse(PersistentMember.roleIds) : undefined;
+  if (!PreviousRoles || !PreviousRoles[0]) return;
+  
+  const PersistentRoles = db.prepare("select * from PersistentRoles").all();
+  for (var i = 0; PreviousRoles.length > 0; i++) {
+    
+    // Check if the role's still persistent and existent
+    if (!PersistentRoles.find((roleId) => {
+      return roleId === PreviousRoles[i];
+    }) && !guild.roles.find((role) => {
+      return role.id === PreviousRoles[i];
+    })) continue;
+    
+    await member.addRole(PreviousRoles[i], "Role is persistent");
+    
+  };
+  
 });
+
+bot.on("guildMemberRemove", async (guild, member) => {
+  
+  if (!member.roles) return; // not cached
+  
+  // Check if they have any persistent roles
+  const PersistentRoles = db.prepare("select * from PersistentRoles").all();
+  const PersistentMemberRoles = member.roles.filter((role) => {
+    return PersistentRoles.find((prole) => {
+      return prole.roleId === role;
+    });
+  });
+  
+  db.prepare("replace into PersistentMembers (userId, roleIds) values (?, ?)").run(member.id, JSON.stringify(PersistentMemberRoles));
+  
+})
 
 bot.on("error", (err) => {
   
