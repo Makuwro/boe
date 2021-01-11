@@ -1,7 +1,7 @@
 {
   "name": "boe",
-  "version": "1.0.0",
-  "description": "A Discord bot created to manage events",
+  "version": "1.1.0",
+  "description": "A Discord bot created to help Da Dragon Den with role and event management",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -94,8 +94,6 @@ bot.on("messageCreate", async (msg) => {
           
           if (currentMessages[x].author.id === msg.author.id && currentMessages[x].createdAt >= BeginningDate) currentAmount++;
           
-          console.log(msg.author.id + ":" + currentAmount);
-          
         };
         
         if (currentAmount >= RegularRequiredMsgAmount) {
@@ -134,14 +132,12 @@ bot.on("messageReactionAdd", async (msg, emoji, reactor) => {
   
   // Make sure they aren't a bot
   if (UserMember.bot) {
-    console.log("bot");
     return;
   };
   
   // Check if the message is a role message
   const RoleMessageInfo = db.prepare("select * from RoleMessages where roleMessageId = (?) and emote = (?)").get(msg.id, emoji.id || emoji.name);
   if (!RoleMessageInfo) {
-    console.warn("nope");
     return;
   };
   
@@ -160,8 +156,6 @@ bot.on("messageReactionRemove", async (msg, emoji, userId) => {
   const Members = await msg.channel.guild.fetchMembers({userIDs: [bot.user.id, userId]});
   const UserMember = Members[0];
   const BotMember = Members[1];
-  
-  console.log(BotMember);
   
   // Make sure they aren't a bot
   if (UserMember.bot) return;
@@ -219,7 +213,6 @@ bot.on("voiceChannelSwitch", async (member, newVC, oldVC) => {
     try {
       let textChannel = bot.getChannel(OldVoiceAndTextChannelInfo.textChannelId);
       await textChannel.deletePermission(member.id, "Hiding VC again");
-      console.log("Switch1 " + member.id)
     } catch (err) {
       
     };
@@ -231,13 +224,60 @@ bot.on("voiceChannelSwitch", async (member, newVC, oldVC) => {
       var textChannel = bot.getChannel(NewVoiceAndTextChannelInfo.textChannelId);
       await textChannel.editPermission(member.id, 1024, 0, "member", "Revealing hidden VC");
       
-      console.log("Switch2 " + member.id)
     } catch (err) {
       
     };
   };
   
 });
+
+bot.on("guildMemberAdd", async (guild, member) => {
+  
+  // Check if there are any default roles
+  // and give it to em 
+  const DefaultRoles = db.prepare("select * from DefaultRoles").all();
+  for (var i = 0; DefaultRoles.length > i; i++) {
+    
+    await member.addRole(DefaultRoles[i].roleId);
+    
+  };
+  
+  // Check if they had any previous roles
+  const PersistentMember = db.prepare("select * from PersistentMembers where userId = (?)").get(member.id);
+  const PreviousRoles = PersistentMember ? JSON.parse(PersistentMember.roleIds) : undefined;
+  if (!PreviousRoles || !PreviousRoles[0]) return;
+  
+  const PersistentRoles = db.prepare("select * from PersistentRoles").all();
+  for (var i = 0; PreviousRoles.length > 0; i++) {
+    
+    // Check if the role's still persistent and existent
+    if (!PersistentRoles.find((roleId) => {
+      return roleId === PreviousRoles[i];
+    }) && !guild.roles.find((role) => {
+      return role.id === PreviousRoles[i];
+    })) continue;
+    
+    await member.addRole(PreviousRoles[i], "Role is persistent");
+    
+  };
+  
+});
+
+bot.on("guildMemberRemove", async (guild, member) => {
+  
+  if (!member.roles) return; // not cached
+  
+  // Check if they have any persistent roles
+  const PersistentRoles = db.prepare("select * from PersistentRoles").all();
+  const PersistentMemberRoles = member.roles.filter((role) => {
+    return PersistentRoles.find((prole) => {
+      return prole.roleId === role;
+    });
+  });
+  
+  db.prepare("replace into PersistentMembers (userId, roleIds) values (?, ?)").run(member.id, JSON.stringify(PersistentMemberRoles));
+  
+})
 
 bot.on("error", (err) => {
   
@@ -247,13 +287,9 @@ bot.on("ready", () => {
   
   console.log("Not ready");
   
-  if (!ExperimentalMode) {
-    return;
+  if (ExperimentalMode) {
+    bot.editStatus("idle", {name: "Maintenance Mode: " + new Date().getTime().toString()});
   };
-  
-  console.log(1);
-  
-  bot.editStatus("idle", {name: "Maintenance Mode: " + new Date().getTime().toString()});
   
   console.log("Ready!");
   
